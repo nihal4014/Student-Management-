@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{base :: parent(~{::section},~{::title})}">
+<head>
+    <title>Admin Dashboard | Student Management System</title>
+</head>
+<body>
+<section class="space-y-10"
+         th:with="
+            presentPercent=${totalStudents > 0 ? (presentToday * 100 / totalStudents) : 0},
+            absentPercent=${totalStudents > 0 ? (absentToday * 100 / totalStudents) : 0},
+            markedPercent=${attendancePercentage}
+         ">
+
+    <style>
+        .counter-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .counter-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(6,182,212,0.04), rgba(99,102,241,0.04), rgba(217,70,239,0.04));
+            pointer-events: none;
+        }
+
+        .chart-track {
+            width: 100%;
+            height: 12px;
+            border-radius: 9999px;
+            overflow: hidden;
+            background: rgba(148, 163, 184, 0.18);
+        }
+
+        .chart-fill {
+            height: 100%;
+            width: 0;
+            border-radius: 9999px;
+            transition: width 1.4s ease;
+        }
+
+        .mini-bar {
+            height: 0;
+            transition: height 1.4s ease;
+        }
+
+        .ring-chart {
+            transition: background 1.4s ease;
+        }
+    </style>
+
+    <!-- HERO -->
+    <div class="relative overflow-hidden rounded-[34px] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-10">
+        <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-cyan-500/10 blur-3xl"></div>
+        <div class="absolute bottom-0 right-1/4 h-48 w-48 rounded-full bg-fuchsia-500/10 blur-3xl"></div>
+
+        <div class="relative grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+            <div>
+                <p class="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-600 dark:text-cyan-400">
+                    Admin Command Center
+                </p>
+                <h2 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+                    Welcome back,
+                    <span th:text="${loggedInDisplayName != null ? loggedInDisplayName : 'Admin'}">Admin</span>
+                </h2>
+                <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300">
+                    Yahan se aap students, attendance, reports aur academic workflow ko premium dashboard experience ke saath manage kar sakte ho.
+                </p>
+
+                <div class="mt-7 flex flex-wrap gap-4">
+                    <a href="/admin/add-student-page"
+                       class="rounded-2xl bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 px-6 py-3 text-sm font-semibold text-white shadow-xl transition duration-300 hover:-translate-y-1 hover:shadow-2xl">
+                        Add Student
+                    </a>
+
+                    <a href="/admin/students-page"
+                       class="rounded-2xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                        Manage Students
+                    </a>
+
+                    <a href="/admin/attendance-page"
+                       class="rounded-2xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                        Attendance Report
+                    </a>
+                </div>
+            </div>
+
+            <div class="rounded-[30px] border border-slate-200 bg-slate-50 p-6 shadow-inner dark:border-slate-800 dark:bg-slate-800/60">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                            Attendance Completion
+                        </p>
+                        <h3 class="mt-1 text-xl font-bold">Today Visual</h3>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex items-center gap-6">
+                    <div class="ring-chart relative flex h-32 w-32 items-center justify-center rounded-full"
+                         th:attr="data-ring-value=${markedPercent}">
+                        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-white text-center shadow-sm dark:bg-slate-900">
+                            <div>
+                                <div class="text-2xl font-bold" data-counter data-suffix="%" th:attr="data-target=${markedPercent}">0%</div>
+                                <div class="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Marked</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 space-y-4">
+                        <div>
+                            <div class="mb-2 flex items-center justify-between text-sm">
+                                <span class="font-medium text-slate-600 dark:text-slate-300">Present</span>
+                                <span class="font-bold text-emerald-600 dark:text-emerald-400" data-counter th:attr="data-target=${presentToday}">0</span>
+                            </div>
+                            <div class="chart-track">
+                                <div class="chart-fill bg-gradient-to-r from-emerald-400 to-emerald-600"
+                                     th:attr="data-bar-width=${presentPercent}"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="mb-2 flex items-center justify-between text-sm">
+                                <span class="font-medium text-slate-600 dark:text-slate-300">Absent</span>
+                                <span class="font-bold text-rose-600 dark:text-rose-400" data-counter th:attr="data-target=${absentToday}">0</span>
+                            </div>
+                            <div class="chart-track">
+                                <div class="chart-fill bg-gradient-to-r from-rose-400 to-rose-600"
+                                     th:attr="data-bar-width=${absentPercent}"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="mb-2 flex items-center justify-between text-sm">
+                                <span class="font-medium text-slate-600 dark:text-slate-300">Marked</span>
+                                <span class="font-bold text-cyan-600 dark:text-cyan-400" data-counter th:attr="data-target=${markedToday}">0</span>
+                            </div>
+                            <div class="chart-track">
+                                <div class="chart-fill bg-gradient-to-r from-cyan-400 to-indigo-600"
+                                     th:attr="data-bar-width=${markedPercent}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COUNTERS -->
+    <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="counter-card rounded-[30px] border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900">
+            <p class="text-sm text-slate-500 dark:text-slate-400">Registered Students</p>
+            <h3 class="mt-2 text-4xl font-bold" data-counter th:attr="data-target=${totalStudents}">0</h3>
+        </div>
+
+        <div class="counter-card rounded-[30px] border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900">
+            <p class="text-sm text-slate-500 dark:text-slate-400">Present Today</p>
+            <h3 class="mt-2 text-4xl font-bold text-emerald-600 dark:text-emerald-400"
+                data-counter th:attr="data-target=${presentToday}">0</h3>
+        </div>
+
+        <div class="counter-card rounded-[30px] border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900">
+            <p class="text-sm text-slate-500 dark:text-slate-400">Absent Today</p>
+            <h3 class="mt-2 text-4xl font-bold text-rose-600 dark:text-rose-400"
+                data-counter th:attr="data-target=${absentToday}">0</h3>
+        </div>
+
+        <div class="counter-card rounded-[30px] border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900">
+            <p class="text-sm text-slate-500 dark:text-slate-400">Attendance Marked</p>
+            <h3 class="mt-2 text-4xl font-bold">
+                <span data-counter data-suffix="%" th:attr="data-target=${markedPercent}">0%</span>
+            </h3>
+        </div>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+        <div class="rounded-[32px] border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <p class="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-600 dark:text-cyan-400">Visual Analytics</p>
+            <h3 class="mt-2 text-2xl font-bold">Today Snapshot Chart</h3>
+
+            <div class="mt-8 flex h-72 items-end justify-between gap-4 rounded-[28px] border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-800/40">
+                <div class="flex h-full w-full items-end justify-around gap-3">
+                    <div class="flex flex-1 flex-col items-center justify-end gap-3">
+                        <div class="mini-bar w-full max-w-[56px] rounded-t-2xl bg-gradient-to-t from-cyan-500 to-cyan-300"
+                             data-bar-height="100"></div>
+                        <div class="text-center">
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Total</p>
+                            <p class="text-sm font-bold" data-counter th:attr="data-target=${totalStudents}">0</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-1 flex-col items-center justify-end gap-3">
+                        <div class="mini-bar w-full max-w-[56px] rounded-t-2xl bg-gradient-to-t from-emerald-500 to-emerald-300"
+                             th:attr="data-bar-height=${presentPercent}"></div>
+                        <div class="text-center">
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Present</p>
+                            <p class="text-sm font-bold text-emerald-600 dark:text-emerald-400"
+                               data-counter th:attr="data-target=${presentToday}">0</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-1 flex-col items-center justify-end gap-3">
+                        <div class="mini-bar w-full max-w-[56px] rounded-t-2xl bg-gradient-to-t from-rose-500 to-rose-300"
+                             th:attr="data-bar-height=${absentPercent}"></div>
+                        <div class="text-center">
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Absent</p>
+                            <p class="text-sm font-bold text-rose-600 dark:text-rose-400"
+                               data-counter th:attr="data-target=${absentToday}">0</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-1 flex-col items-center justify-end gap-3">
+                        <div class="mini-bar w-full max-w-[56px] rounded-t-2xl bg-gradient-to-t from-indigo-500 to-fuchsia-400"
+                             th:attr="data-bar-height=${markedPercent}"></div>
+                        <div class="text-center">
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Marked</p>
+                            <p class="text-sm font-bold" data-counter th:attr="data-target=${markedToday}">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <!-- LIVE EDIT SHORTCUT -->
+            <div class="rounded-[32px] border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <p class="text-sm font-semibold uppercase tracking-[0.18em] text-indigo-600 dark:text-indigo-400">Live Edit Shortcut</p>
+                <h3 class="mt-2 text-2xl font-bold">Open student editor directly</h3>
+
+                <form id="quickEditForm" class="mt-6 space-y-4">
+                    <div>
+                        <label for="quickEditStudentId" class="mb-2 block text-sm font-semibold">Student ID</label>
+                        <input id="quickEditStudentId"
+                               type="number"
+                               placeholder="Enter student ID"
+                               class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                    </div>
+
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <button type="submit"
+                                class="rounded-2xl bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl">
+                            Open Editor
+                        </button>
+
+                        <a href="/admin/students-page"
+                           class="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-center text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                            Students Page
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- RECENT ACTIVITY PANEL -->
+            <div class="rounded-[32px] border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <p class="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-600 dark:text-cyan-400">Recent Activity</p>
+                <h3 class="mt-2 text-2xl font-bold">Live summary panel</h3>
+
+                <div class="mt-6 space-y-4">
+                    <div class="flex items-start gap-4 rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
+                        <div class="mt-1 h-3 w-3 rounded-full bg-cyan-500"></div>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold">Students Registered</p>
+                            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                                Current total:
+                                <span class="font-bold text-slate-800 dark:text-slate-100" data-counter th:attr="data-target=${totalStudents}">0</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4 rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
+                        <div class="mt-1 h-3 w-3 rounded-full bg-emerald-500"></div>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold">Attendance Marked Today</p>
+                            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                                Marked students:
+                                <span class="font-bold text-emerald-600 dark:text-emerald-400" data-counter th:attr="data-target=${markedToday}">0</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4 rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
+                        <div class="mt-1 h-3 w-3 rounded-full bg-rose-500"></div>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold">Absent Students</p>
+                            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                                Current absent count:
+                                <span class="font-bold text-rose-600 dark:text-rose-400" data-counter th:attr="data-target=${absentToday}">0</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4 rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
+                        <div class="mt-1 h-3 w-3 rounded-full bg-indigo-500"></div>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold">Completion Percentage</p>
+                            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                                Attendance completion:
+                                <span class="font-bold text-indigo-600 dark:text-indigo-400">
+                                    <span data-counter data-suffix="%" th:attr="data-target=${markedPercent}">0%</span>
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATUS -->
+            <div class="rounded-[32px] border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <p class="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-600 dark:text-cyan-400">System Status</p>
+                <h3 class="mt-2 text-2xl font-bold">Environment monitor</h3>
+
+                <div class="mt-6 space-y-4">
+                    <div class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-4 dark:bg-slate-800/60">
+                        <span class="text-sm font-medium">Database</span>
+                        <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">Connected</span>
+                    </div>
+
+                    <div class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-4 dark:bg-slate-800/60">
+                        <span class="text-sm font-medium">Scheduler</span>
+                        <span class="rounded-full bg-cyan-100 px-3 py-1 text-xs font-bold text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300">Active</span>
+                    </div>
+
+                    <div class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-4 dark:bg-slate-800/60">
+                        <span class="text-sm font-medium">Security</span>
+                        <span class="rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">Secured</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (() => {
+            const animateCounters = () => {
+                document.querySelectorAll("[data-counter]").forEach((el) => {
+                    const target = parseFloat(el.dataset.target || "0");
+                    const suffix = el.dataset.suffix || "";
+                    const duration = 1400;
+                    const start = performance.now();
+
+                    const step = (now) => {
+                        const progress = Math.min((now - start) / duration, 1);
+                        const value = target * (1 - Math.pow(1 - progress, 3));
+                        el.textContent = (Number.isInteger(target) ? Math.round(value) : value.toFixed(1)) + suffix;
+                        if (progress < 1) requestAnimationFrame(step);
+                    };
+
+                    requestAnimationFrame(step);
+                });
+            };
+
+            const animateBars = () => {
+                document.querySelectorAll("[data-bar-width]").forEach((el) => {
+                    const width = el.dataset.barWidth || "0";
+                    requestAnimationFrame(() => {
+                        el.style.width = width + "%";
+                    });
+                });
+
+                document.querySelectorAll("[data-bar-height]").forEach((el) => {
+                    const height = el.dataset.barHeight || "0";
+                    requestAnimationFrame(() => {
+                        el.style.height = height + "%";
+                    });
+                });
+
+                document.querySelectorAll("[data-ring-value]").forEach((el) => {
+                    const value = parseFloat(el.dataset.ringValue || "0");
+                    requestAnimationFrame(() => {
+                        el.style.background =
+                            `conic-gradient(rgb(6,182,212) 0% ${value}%, rgba(148,163,184,0.22) ${value}% 100%)`;
+                    });
+                });
+            };
+
+            animateCounters();
+            animateBars();
+
+            const quickEditForm = document.getElementById("quickEditForm");
+            const quickEditStudentId = document.getElementById("quickEditStudentId");
+
+            quickEditForm?.addEventListener("submit", (e) => {
+                e.preventDefault();
+
+                const studentId = quickEditStudentId.value.trim();
+                if (!studentId) {
+                    window.showToast?.("Please enter a student ID.", "warning");
+                    return;
+                }
+
+                window.showPageLoader?.("Opening student editor...");
+                window.showToast?.("Redirecting to student editor.", "info");
+                window.location.href = `/admin/students-page?editId=${encodeURIComponent(studentId)}`;
+            });
+        })();
+    </script>
+
+</section>
+</body>
+</html>

@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{base :: parent(~{::section},~{::title})}">
+<head>
+    <title>Attendance Report | Admin Panel</title>
+</head>
+<body>
+<section class="space-y-10"
+         th:with="
+            avgLoginNum=${averageLoginCount != null ? T(java.lang.Double).parseDouble(averageLoginCount.toString()) : 0.0},
+            avgLoginBar=${avgLoginNum > 5 ? 100 : avgLoginNum * 20},
+            presentRate=${totalMarked > 0 ? (presentToday * 100 / totalMarked) : 0},
+            absentRate=${totalMarked > 0 ? (absentToday * 100 / totalMarked) : 0}
+         ">
+
+    <style>
+        .chart-track {
+            width: 100%;
+            height: 12px;
+            border-radius: 9999px;
+            overflow: hidden;
+            background: rgba(148, 163, 184, 0.18);
+        }
+
+        .chart-fill {
+            height: 100%;
+            width: 0;
+            border-radius: 9999px;
+            transition: width 1.2s ease;
+        }
+
+        .mini-bar {
+            height: 0;
+            transition: height 1.2s ease;
+        }
+
+        .ring-chart {
+            transition: background 1.3s ease;
+        }
+    </style>
+
+    <!-- HERO -->
+    <div class="relative overflow-hidden rounded-[34px] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-10">
+        <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-cyan-500/10 blur-3xl"></div>
+        <div class="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <p class="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-600 dark:text-cyan-400">
+                    Attendance Analytics
+                </p>
+                <h2 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Daily Attendance Report</h2>
+                <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300">
+                    Present, absent, total marked aur login count ka premium visual report.
+                </p>
+            </div>
+
+            <div class="flex flex-wrap gap-3">
+                <button id="filterAllBtn"
+                        class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 dark:bg-white dark:text-slate-900">
+                    Show All
+                </button>
+                <button id="filterPresentBtn"
+                        class="rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5">
+                    Present
+                </button>
+                <button id="filterAbsentBtn"
+                        class="rounded-2xl bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5">
+                    Absent
+                </button>
+                <a href="/admin/dashboard"
+                   class="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                    Back Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOP STATS -->
+    <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div class="flex h-14 w-14 items-center justify-center rounded-3xl bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="m5 13 4 4L19 7"/>
+                </svg>
+            </div>
+            <p class="mt-5 text-sm text-slate-500 dark:text-slate-400">Present Today</p>
+            <h3 class="mt-2 text-4xl font-bold text-emerald-600 dark:text-emerald-400"
+                data-counter th:attr="data-target=${presentToday}">0</h3>
+        </div>
+
+        <div class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div class="flex h-14 w-14 items-center justify-center rounded-3xl bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300">
+                <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M18 6 6 18"/>
+                    <path d="m6 6 12 12"/>
+                </svg>
+            </div>
+            <p class="mt-5 text-sm text-slate-500 dark:text-slate-400">Absent Today</p>
+            <h3 class="mt-2 text-4xl font-bold text-rose-600 dark:text-rose-400"
+                data-counter th:attr="data-target=${absentToday}">0</h3>
+        </div>
+
+        <div class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div class="flex h-14 w-14 items-center justify-center rounded-3xl bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300">
+                <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M4 20V10"/>
+                    <path d="M10 20V4"/>
+                    <path d="M16 20v-7"/>
+                    <path d="M22 20v-3"/>
+                </svg>
+            </div>
+            <p class="mt-5 text-sm text-slate-500 dark:text-slate-400">Total Marked</p>
+            <h3 class="mt-2 text-4xl font-bold" data-counter th:attr="data-target=${totalMarked}">0</h3>
+        </div>
+
+        <div class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div class="flex h-14 w-14 items-center justify-center rounded-3xl bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
+                <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M12 6v6l4 2"/>
+                    <circle cx="12" cy="12" r="9"/>
+                </svg>
+            </div>
+            <p class="mt-5 text-sm text-slate-500 dark:text-slate-400">Average Login Count</p>
+            <h3 class="mt-2 text-4xl font-bold" data-counter th:attr="data-target=${avgLoginNum}">0</h3>
+        </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+        <div class="rounded-[32px] border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <p class="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-600 dark:text-cyan-400">Visual Chart</p>
+            <h3 class="mt-2 text-2xl font-bold">Present vs Absent</h3>
+
+            <div class="mt-8 flex items-center gap-6">
+                <div class="ring-chart relative flex h-36 w-36 items-center justify-center rounded-full"
+                     th:attr="data-ring-value=${presentRate}">
+                    <div class="flex h-24 w-24 items-center justify-center rounded-full bg-white text-center shadow-sm dark:bg-slate-900">
+                        <div>
+                            <div class="text-2xl font-bold" data-counter data-suffix="%" th:attr="data-target=${presentRate}">0%</div>
+                            <div class="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Present</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex-1 space-y-4">
+                    <div>
+                        <div class="mb-2 flex items-center justify-between text-sm">
+                            <span class="font-medium text-slate-600 dark:text-slate-300">Present Rate</span>
+                            <span class="font-bold text-emerald-600 dark:text-emerald-400"
+                                  data-counter data-suffix="%" th:attr="data-target=${presentRate}">0%</span>
+                        </div>
+                        <div class="chart-track">
+                            <div class="chart-fill bg-gradient-to-r from-emerald-400 to-emerald-600"
+                                 th:attr="data-bar-width=${presentRate}"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="mb-2 flex items-center justify-between text-sm">
+                            <span class="font-medium text-slate-600 dark:text-slate-300">Absent Rate</span>
+                            <span class="font-bold text-rose-600 dark:text-rose-400"
+                                  data-counter data-suffix="%" th:attr="data-target=${absentRate}">0%</span>
+                        </div>
+                        <div class="chart-track">
+                            <div class="chart-fill bg-gradient-to-r from-rose-400 to-rose-600"
+                                 th:attr="data-bar-width=${absentRate}"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="mb-2 flex items-center justify-between text-sm">
+                            <span class="font-medium text-slate-600 dark:text-slate-300">Average Login Strength</span>
+                            <span class="font-bold text-indigo-600 dark:text-indigo-400"
+                                  data-counter th:attr="data-target=${avgLoginNum}">0</span>
+                        </div>
+                        <div class="chart-track">
+                            <div class="chart-fill bg-gradient-to-r from-indigo-400 to-fuchsia-500"
+                                 th:attr="data-bar-width=${avgLoginBar}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 flex h-64 items-end justify-between gap-4 rounded-[28px] border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-800/40">
+                <div class="flex h-full w-full items-end justify-around gap-3">
+                    <div class="flex flex-1 flex-col items-center justify-end gap-3">
+                        <div class="mini-bar w-full max-w-[60px] rounded-t-2xl bg-gradient-to-t from-emerald-500 to-emerald-300"
+                             th:attr="data-bar-height=${presentRate}"></div>
+                        <div class="text-center">
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Present</p>
+                            <p class="text-sm font-bold text-emerald-600 dark:text-emerald-400"
+                               data-counter th:attr="data-target=${presentToday}">0</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-1 flex-col items-center justify-end gap-3">
+                        <div class="mini-bar w-full max-w-[60px] rounded-t-2xl bg-gradient-to-t from-rose-500 to-rose-300"
+                             th:attr="data-bar-height=${absentRate}"></div>
+                        <div class="text-center">
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Absent</p>
+                            <p class="text-sm font-bold text-rose-600 dark:text-rose-400"
+                               data-counter th:attr="data-target=${absentToday}">0</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-1 flex-col items-center justify-end gap-3">
+                        <div class="mini-bar w-full max-w-[60px] rounded-t-2xl bg-gradient-to-t from-indigo-500 to-fuchsia-400"
+                             th:attr="data-bar-height=${avgLoginBar}"></div>
+                        <div class="text-center">
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Avg Login</p>
+                            <p class="text-sm font-bold" data-counter th:attr="data-target=${avgLoginNum}">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-[32px] border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <p class="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-600 dark:text-cyan-400">Quick Tools</p>
+            <h3 class="mt-2 text-2xl font-bold">Filter Attendance</h3>
+
+            <div class="mt-6 space-y-4">
+                <div>
+                    <label for="attendanceSearch" class="mb-2 block text-sm font-semibold">Search by Student ID or Date</label>
+                    <input id="attendanceSearch"
+                           type="text"
+                           placeholder="Search records..."
+                           class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                </div>
+
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <button id="reportShowAllBtn"
+                            class="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 dark:bg-white dark:text-slate-900">
+                        Show All
+                    </button>
+                    <button id="reportShowPresentBtn"
+                            class="rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5">
+                        Show Present
+                    </button>
+                    <button id="reportShowAbsentBtn"
+                            class="rounded-2xl bg-rose-600 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5">
+                        Show Absent
+                    </button>
+                    <button id="reportInspectFirstBtn"
+                            class="rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5">
+                        Inspect First
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-6 rounded-[26px] border border-slate-200 bg-gradient-to-r from-cyan-50 to-indigo-50 p-5 dark:border-slate-800 dark:bg-slate-800/40">
+                <p class="text-sm font-semibold text-slate-600 dark:text-slate-300">Report Insight</p>
+                <p class="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">
+                    Is page par aap filters, row inspection aur attendance trend chart ke through fast review kar sakte ho.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div class="flex flex-col gap-4 border-b border-slate-200 p-6 dark:border-slate-800 md:flex-row md:items-center md:justify-between">
+            <div>
+                <p class="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-600 dark:text-cyan-400">Live Records</p>
+                <h3 class="mt-2 text-2xl font-bold">Today Attendance</h3>
+            </div>
+            <div class="text-sm text-slate-500 dark:text-slate-400">
+                Visible rows:
+                <span id="attendanceVisibleCount" class="font-bold">0</span>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(attendanceRecords)}" class="p-10">
+            <div class="rounded-[30px] border border-dashed border-slate-300 bg-slate-50 p-10 text-center dark:border-slate-700 dark:bg-slate-800/40">
+                <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300">
+                    <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M12 6v6l4 2"/>
+                        <circle cx="12" cy="12" r="9"/>
+                    </svg>
+                </div>
+                <h4 class="mt-5 text-2xl font-bold">No Attendance Records</h4>
+                <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">
+                    Aaj ke liye abhi koi attendance record available nahi hai.
+                </p>
+            </div>
+        </div>
+
+        <div th:if="${!#lists.isEmpty(attendanceRecords)}" class="overflow-x-auto">
+            <table class="min-w-full text-left">
+                <thead class="bg-slate-50 dark:bg-slate-800/60">
+                <tr>
+                    <th class="px-6 py-4 text-sm font-semibold">Student ID</th>
+                    <th class="px-6 py-4 text-sm font-semibold">Date</th>
+                    <th class="px-6 py-4 text-sm font-semibold">Status</th>
+                    <th class="px-6 py-4 text-sm font-semibold">Login Count</th>
+                    <th class="px-6 py-4 text-sm font-semibold">First Login</th>
+                    <th class="px-6 py-4 text-sm font-semibold">Last Login</th>
+                    <th class="px-6 py-4 text-sm font-semibold">Action</th>
+                </tr>
+                </thead>
+
+                <tbody id="attendanceTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                <tr th:each="record : ${attendanceRecords}"
+                    class="attendance-row transition hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                    th:attr="
+                        data-studentid=${record.studentId},
+                        data-date=${record.date},
+                        data-status=${record.status},
+                        data-logincount=${record.loginCount},
+                        data-firstlogin=${record.firstLoginTime != null ? #temporals.format(record.firstLoginTime, 'dd-MM-yyyy hh:mm a') : '-'},
+                        data-lastlogin=${record.lastLoginTime != null ? #temporals.format(record.lastLoginTime, 'dd-MM-yyyy hh:mm a') : '-'}
+                    ">
+                    <td class="px-6 py-4 text-sm" th:text="${record.studentId}">1</td>
+                    <td class="px-6 py-4 text-sm" th:text="${record.date}">2026-04-26</td>
+
+                    <td class="px-6 py-4">
+                        <span th:if="${record.status == 'PRESENT'}"
+                              class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                            PRESENT
+                        </span>
+
+                        <span th:if="${record.status == 'ABSENT'}"
+                              class="rounded-full bg-rose-100 px-3 py-1 text-xs font-bold text-rose-700 dark:bg-rose-900/30 dark:text-rose-300">
+                            ABSENT
+                        </span>
+                    </td>
+
+                    <td class="px-6 py-4 text-sm" th:text="${record.loginCount}">0</td>
+                    <td class="px-6 py-4 text-sm"
+                        th:text="${record.firstLoginTime != null ? #temporals.format(record.firstLoginTime, 'hh:mm a') : '-'}">
+                        -
+                    </td>
+                    <td class="px-6 py-4 text-sm"
+                        th:text="${record.lastLoginTime != null ? #temporals.format(record.lastLoginTime, 'hh:mm a') : '-'}">
+                        -
+                    </td>
+                    <td class="px-6 py-4">
+                        <button type="button"
+                                class="inspect-btn rounded-xl bg-cyan-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-cyan-700">
+                            Inspect
+                        </button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- INSPECT MODAL -->
+    <div id="attendanceInspectModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 px-4">
+        <div class="w-full max-w-2xl rounded-[30px] border border-slate-200 bg-white p-7 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-600 dark:text-cyan-400">Attendance Inspect</p>
+                    <h3 class="mt-2 text-2xl font-bold">Record Details</h3>
+                </div>
+                <button id="closeAttendanceInspectModal"
+                        class="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold dark:border-slate-700 dark:bg-slate-800">
+                    Close
+                </button>
+            </div>
+
+            <div class="mt-6 grid gap-4 md:grid-cols-2">
+                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
+                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Student ID</p>
+                    <h4 id="inspectStudentId" class="mt-2 text-lg font-bold">-</h4>
+                </div>
+                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
+                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Date</p>
+                    <h4 id="inspectDate" class="mt-2 text-lg font-bold">-</h4>
+                </div>
+                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
+                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Status</p>
+                    <h4 id="inspectStatus" class="mt-2 text-lg font-bold">-</h4>
+                </div>
+                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
+                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Login Count</p>
+                    <h4 id="inspectLoginCount" class="mt-2 text-lg font-bold">-</h4>
+                </div>
+                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
+                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">First Login</p>
+                    <h4 id="inspectFirstLogin" class="mt-2 text-lg font-bold">-</h4>
+                </div>
+                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
+                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Last Login</p>
+                    <h4 id="inspectLastLogin" class="mt-2 text-lg font-bold">-</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (() => {
+            const animateCounters = () => {
+                document.querySelectorAll("[data-counter]").forEach((el) => {
+                    const target = parseFloat(el.dataset.target || "0");
+                    const suffix = el.dataset.suffix || "";
+                    const duration = 1200;
+                    const start = performance.now();
+
+                    const step = (now) => {
+                        const progress = Math.min((now - start) / duration, 1);
+                        const value = target * (1 - Math.pow(1 - progress, 3));
+                        el.textContent = (Number.isInteger(target) ? Math.round(value) : value.toFixed(1)) + suffix;
+                        if (progress < 1) requestAnimationFrame(step);
+                    };
+
+                    requestAnimationFrame(step);
+                });
+            };
+
+            const animateBars = () => {
+                document.querySelectorAll("[data-bar-width]").forEach((el) => {
+                    const width = el.dataset.barWidth || "0";
+                    requestAnimationFrame(() => {
+                        el.style.width = width + "%";
+                    });
+                });
+
+                document.querySelectorAll("[data-bar-height]").forEach((el) => {
+                    const height = el.dataset.barHeight || "0";
+                    requestAnimationFrame(() => {
+                        el.style.height = height + "%";
+                    });
+                });
+
+                document.querySelectorAll("[data-ring-value]").forEach((el) => {
+                    const value = parseFloat(el.dataset.ringValue || "0");
+                    requestAnimationFrame(() => {
+                        el.style.background =
+                            `conic-gradient(rgb(16,185,129) 0% ${value}%, rgba(148,163,184,0.22) ${value}% 100%)`;
+                    });
+                });
+            };
+
+            animateCounters();
+            animateBars();
+
+            const rows = () => Array.from(document.querySelectorAll(".attendance-row"));
+            const searchInput = document.getElementById("attendanceSearch");
+            const visibleCount = document.getElementById("attendanceVisibleCount");
+
+            const updateVisibleCount = () => {
+                const count = rows().filter(row => row.style.display !== "none").length;
+                if (visibleCount) visibleCount.textContent = count;
+            };
+
+            const applyFilter = (mode = "ALL") => {
+                const query = (searchInput?.value || "").toLowerCase().trim();
+
+                rows().forEach((row) => {
+                    const text = row.textContent.toLowerCase();
+                    const status = (row.dataset.status || "").toUpperCase();
+
+                    const queryMatch = text.includes(query);
+                    let statusMatch = true;
+
+                    if (mode === "PRESENT") statusMatch = status === "PRESENT";
+                    if (mode === "ABSENT") statusMatch = status === "ABSENT";
+
+                    row.style.display = queryMatch && statusMatch ? "" : "none";
+                });
+
+                updateVisibleCount();
+            };
+
+            searchInput?.addEventListener("input", () => applyFilter("ALL"));
+            document.getElementById("filterAllBtn")?.addEventListener("click", () => applyFilter("ALL"));
+            document.getElementById("filterPresentBtn")?.addEventListener("click", () => applyFilter("PRESENT"));
+            document.getElementById("filterAbsentBtn")?.addEventListener("click", () => applyFilter("ABSENT"));
+            document.getElementById("reportShowAllBtn")?.addEventListener("click", () => applyFilter("ALL"));
+            document.getElementById("reportShowPresentBtn")?.addEventListener("click", () => applyFilter("PRESENT"));
+            document.getElementById("reportShowAbsentBtn")?.addEventListener("click", () => applyFilter("ABSENT"));
+
+            updateVisibleCount();
+
+            const modal = document.getElementById("attendanceInspectModal");
+            const closeModal = document.getElementById("closeAttendanceInspectModal");
+
+            const openInspect = (row) => {
+                if (!row) return;
+                document.getElementById("inspectStudentId").textContent = row.dataset.studentid || "-";
+                document.getElementById("inspectDate").textContent = row.dataset.date || "-";
+                document.getElementById("inspectStatus").textContent = row.dataset.status || "-";
+                document.getElementById("inspectLoginCount").textContent = row.dataset.logincount || "-";
+                document.getElementById("inspectFirstLogin").textContent = row.dataset.firstlogin || "-";
+                document.getElementById("inspectLastLogin").textContent = row.dataset.lastlogin || "-";
+
+                modal.classList.remove("hidden");
+                modal.classList.add("flex");
+            };
+
+            document.querySelectorAll(".inspect-btn").forEach((btn) => {
+                btn.addEventListener("click", () => openInspect(btn.closest(".attendance-row")));
+            });
+
+            document.getElementById("reportInspectFirstBtn")?.addEventListener("click", () => {
+                const firstVisible = rows().find(row => row.style.display !== "none");
+                openInspect(firstVisible);
+            });
+
+            closeModal?.addEventListener("click", () => {
+                modal.classList.add("hidden");
+                modal.classList.remove("flex");
+            });
+
+            modal?.addEventListener("click", (e) => {
+                if (e.target === modal) {
+                    modal.classList.add("hidden");
+                    modal.classList.remove("flex");
+                }
+            });
+        })();
+    </script>
+
+</section>
+</body>
+</html>

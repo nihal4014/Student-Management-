@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{base :: parent(~{::section},~{::title})}">
+<head>
+    <title>Add Student | Admin Panel</title>
+</head>
+<body>
+<section class="space-y-10">
+
+    <style>
+        .pulse-orb {
+            animation: pulseOrb 3s ease-in-out infinite;
+        }
+
+        @keyframes pulseOrb {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.08); opacity: 1; }
+        }
+
+        .form-progress-fill {
+            width: 0;
+            transition: width 0.35s ease;
+        }
+    </style>
+
+    <!-- HERO -->
+    <div class="relative overflow-hidden rounded-[34px] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-10">
+        <div class="absolute -right-20 -top-20 h-60 w-60 rounded-full bg-cyan-500/10 blur-3xl"></div>
+        <div class="absolute bottom-0 left-1/3 h-44 w-44 rounded-full bg-fuchsia-500/10 blur-3xl"></div>
+
+        <div class="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <p class="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-600 dark:text-cyan-400">
+                    Admin Action
+                </p>
+                <h2 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Add New Student</h2>
+                <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300">
+                    Premium form ke through new student profile create karo. Clean input flow, instant feedback aur smart subject parsing included hai.
+                </p>
+            </div>
+
+            <div class="flex flex-wrap gap-3">
+                <a href="/admin/students-page"
+                   class="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                    All Students
+                </a>
+                <a href="/admin/dashboard"
+                   class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 dark:bg-white dark:text-slate-900">
+                    Back Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+        <!-- FORM -->
+        <div class="rounded-[32px] border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div class="flex items-center justify-between gap-4">
+                <div>
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-600 dark:text-cyan-400">Student Form</p>
+                    <h3 class="mt-2 text-2xl font-bold">Create Student Record</h3>
+                </div>
+                <div class="flex h-14 w-14 items-center justify-center rounded-3xl bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300">
+                    <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M12 5v14"/>
+                        <path d="M5 12h14"/>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="mt-6">
+                <div class="mb-2 flex items-center justify-between text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                    <span>Form Completion</span>
+                    <span id="formProgressText">0%</span>
+                </div>
+                <div class="h-3 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+                    <div id="formProgressFill" class="form-progress-fill h-full rounded-full bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500"></div>
+                </div>
+            </div>
+
+            <div id="successMessage"
+                 class="mt-6 hidden rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
+                Student added successfully.
+            </div>
+
+            <div id="errorMessage"
+                 class="mt-6 hidden rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">
+                Something went wrong.
+            </div>
+
+            <form id="addStudentForm" class="mt-6 space-y-5">
+                <div class="grid gap-5 md:grid-cols-2">
+                    <div>
+                        <label for="username" class="mb-2 block text-sm font-semibold">Student Name</label>
+                        <input id="username" name="username" type="text" required
+                               placeholder="Enter student name"
+                               class="form-field w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                    </div>
+
+                    <div>
+                        <label for="email" class="mb-2 block text-sm font-semibold">Email</label>
+                        <input id="email" name="email" type="email" required
+                               placeholder="Enter email"
+                               class="form-field w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                    </div>
+                </div>
+
+                <div class="grid gap-5 md:grid-cols-2">
+                    <div>
+                        <label for="password" class="mb-2 block text-sm font-semibold">Password</label>
+                        <div class="relative">
+                            <input id="password" name="password" type="password" required
+                                   placeholder="Enter password"
+                                   class="form-field w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-14 text-sm outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                            <button type="button" id="togglePasswordBtn"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 rounded-xl px-3 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700">
+                                Show
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="age" class="mb-2 block text-sm font-semibold">Age</label>
+                        <input id="age" name="age" type="number" required
+                               placeholder="Enter age"
+                               class="form-field w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="subjects" class="mb-2 block text-sm font-semibold">Subjects</label>
+                    <input id="subjects" name="subjects" type="text"
+                           placeholder="Example: Java, Spring Boot, SQL"
+                           class="form-field w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                        Multiple subjects comma separated likho.
+                    </p>
+                </div>
+
+                <div id="subjectsPreviewWrapper" class="hidden rounded-[24px] border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/40">
+                    <p class="text-sm font-semibold">Subjects Preview</p>
+                    <div id="subjectsPreview" class="mt-3 flex flex-wrap gap-2"></div>
+                </div>
+
+                <input type="hidden" name="role" value="ROLE_STUDENT">
+
+                <div class="flex flex-wrap gap-3 pt-2">
+                    <button type="submit" id="submitBtn"
+                            class="rounded-2xl bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl">
+                        Add Student
+                    </button>
+
+                    <button type="reset" id="resetBtn"
+                            class="rounded-2xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                        Reset
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- SIDE PANEL -->
+        <div class="space-y-6">
+            <div class="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <div class="flex items-center gap-4">
+                    <div class="pulse-orb flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-lg">
+                        <svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M8 7a4 4 0 1 1 8 0a4 4 0 0 1-8 0Z"/>
+                            <path d="M4 20a8 8 0 0 1 16 0"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-600 dark:text-cyan-400">Preview Card</p>
+                        <h3 class="mt-1 text-2xl font-bold">Student Snapshot</h3>
+                    </div>
+                </div>
+
+                <div class="mt-6 space-y-4">
+                    <div class="rounded-2xl bg-slate-50 px-4 py-4 dark:bg-slate-800/60">
+                        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Name</p>
+                        <h4 id="previewName" class="mt-2 text-lg font-bold">-</h4>
+                    </div>
+
+                    <div class="rounded-2xl bg-slate-50 px-4 py-4 dark:bg-slate-800/60">
+                        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Email</p>
+                        <h4 id="previewEmail" class="mt-2 text-lg font-bold">-</h4>
+                    </div>
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div class="rounded-2xl bg-slate-50 px-4 py-4 dark:bg-slate-800/60">
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Age</p>
+                            <h4 id="previewAge" class="mt-2 text-lg font-bold">-</h4>
+                        </div>
+                        <div class="rounded-2xl bg-slate-50 px-4 py-4 dark:bg-slate-800/60">
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Subjects</p>
+                            <h4 id="previewSubjectCount" class="mt-2 text-lg font-bold">0</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <h3 class="text-xl font-bold">Instructions</h3>
+                <ul class="mt-4 space-y-3 text-sm text-slate-600 dark:text-slate-300">
+                    <li>Student name aur email valid hona chahiye.</li>
+                    <li>Password required hai.</li>
+                    <li>Age numeric value me do.</li>
+                    <li>Subjects comma separated likho.</li>
+                    <li>Backend endpoint: <span class="font-semibold text-cyan-600 dark:text-cyan-400">/admin/add-student</span></li>
+                </ul>
+            </div>
+
+            <div class="rounded-[32px] border border-slate-200 bg-gradient-to-r from-cyan-50 to-indigo-50 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-800/40">
+                <h3 class="text-xl font-bold">Admin Tip</h3>
+                <p class="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
+                    Form भरते समय live preview aur subjects chips aapko instantly student record ka structure dikha denge.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (() => {
+            const form = document.getElementById("addStudentForm");
+            const successMessage = document.getElementById("successMessage");
+            const errorMessage = document.getElementById("errorMessage");
+            const fields = Array.from(document.querySelectorAll(".form-field"));
+
+            const username = document.getElementById("username");
+            const email = document.getElementById("email");
+            const password = document.getElementById("password");
+            const age = document.getElementById("age");
+            const subjectsInput = document.getElementById("subjects");
+
+            const previewName = document.getElementById("previewName");
+            const previewEmail = document.getElementById("previewEmail");
+            const previewAge = document.getElementById("previewAge");
+            const previewSubjectCount = document.getElementById("previewSubjectCount");
+
+            const subjectsPreviewWrapper = document.getElementById("subjectsPreviewWrapper");
+            const subjectsPreview = document.getElementById("subjectsPreview");
+
+            const progressFill = document.getElementById("formProgressFill");
+            const progressText = document.getElementById("formProgressText");
+
+            const togglePasswordBtn = document.getElementById("togglePasswordBtn");
+            const submitBtn = document.getElementById("submitBtn");
+            const resetBtn = document.getElementById("resetBtn");
+
+            const getSubjects = () => {
+                return subjectsInput.value
+                    .split(",")
+                    .map(subject => subject.trim())
+                    .filter(subject => subject.length > 0);
+            };
+
+            const updatePreview = () => {
+                previewName.textContent = username.value.trim() || "-";
+                previewEmail.textContent = email.value.trim() || "-";
+                previewAge.textContent = age.value.trim() || "-";
+
+                const subjects = getSubjects();
+                previewSubjectCount.textContent = subjects.length;
+
+                subjectsPreview.innerHTML = "";
+                if (subjects.length > 0) {
+                    subjectsPreviewWrapper.classList.remove("hidden");
+                    subjects.forEach(subject => {
+                        const chip = document.createElement("span");
+                        chip.className = "rounded-full bg-cyan-100 px-3 py-2 text-sm font-semibold text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300";
+                        chip.textContent = subject;
+                        subjectsPreview.appendChild(chip);
+                    });
+                } else {
+                    subjectsPreviewWrapper.classList.add("hidden");
+                }
+            };
+
+            const updateProgress = () => {
+                let filled = 0;
+                if (username.value.trim()) filled++;
+                if (email.value.trim()) filled++;
+                if (password.value.trim()) filled++;
+                if (age.value.trim()) filled++;
+                if (subjectsInput.value.trim()) filled++;
+
+                const total = 5;
+                const percent = Math.round((filled / total) * 100);
+
+                progressFill.style.width = percent + "%";
+                progressText.textContent = percent + "%";
+            };
+
+            fields.forEach(field => {
+                field.addEventListener("input", () => {
+                    updatePreview();
+                    updateProgress();
+                });
+            });
+
+            togglePasswordBtn.addEventListener("click", () => {
+                const isPassword = password.type === "password";
+                password.type = isPassword ? "text" : "password";
+                togglePasswordBtn.textContent = isPassword ? "Hide" : "Show";
+            });
+
+            resetBtn.addEventListener("click", () => {
+                setTimeout(() => {
+                    updatePreview();
+                    updateProgress();
+                    successMessage.classList.add("hidden");
+                    errorMessage.classList.add("hidden");
+                }, 0);
+            });
+
+            form.addEventListener("submit", async function (e) {
+                e.preventDefault();
+
+                successMessage.classList.add("hidden");
+                errorMessage.classList.add("hidden");
+
+                const studentData = {
+                    username: username.value.trim(),
+                    email: email.value.trim(),
+                    password: password.value.trim(),
+                    age: parseInt(age.value),
+                    subjects: getSubjects(),
+                    role: "ROLE_STUDENT"
+                };
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Adding...";
+
+                try {
+                    const response = await fetch("/admin/add-student", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(studentData)
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        errorMessage.textContent = errorText || "Failed to add student.";
+                        errorMessage.classList.remove("hidden");
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = "Add Student";
+                        return;
+                    }
+
+                    await response.json();
+                    successMessage.textContent = "Student added successfully.";
+                    successMessage.classList.remove("hidden");
+                    form.reset();
+                    updatePreview();
+                    updateProgress();
+                } catch (error) {
+                    errorMessage.textContent = "Something went wrong while adding the student.";
+                    errorMessage.classList.remove("hidden");
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Add Student";
+                }
+            });
+
+            updatePreview();
+            updateProgress();
+        })();
+    </script>
+</section>
+</body>
+</html>

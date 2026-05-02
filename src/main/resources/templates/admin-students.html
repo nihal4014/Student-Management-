@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{base :: parent(~{::section},~{::title})}">
+<head>
+    <title>Students | Admin Panel</title>
+</head>
+<body>
+<section class="space-y-10"
+         th:with="
+            remainingStudents=${totalStudents - presentToday},
+            presentPercent=${totalStudents > 0 ? (presentToday * 100 / totalStudents) : 0},
+            remainingPercent=${totalStudents > 0 ? ((totalStudents - presentToday) * 100 / totalStudents) : 0}
+         ">
+
+    <style>
+        .chart-track {
+            width: 100%;
+            height: 12px;
+            border-radius: 9999px;
+            overflow: hidden;
+            background: rgba(148, 163, 184, 0.18);
+        }
+
+        .chart-fill {
+            height: 100%;
+            width: 0;
+            border-radius: 9999px;
+            transition: width 1.2s ease;
+        }
+
+        .mini-bar {
+            height: 0;
+            transition: height 1.2s ease;
+        }
+    </style>
+
+    <div class="relative overflow-hidden rounded-[34px] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-10">
+        <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-cyan-500/10 blur-3xl"></div>
+        <div class="absolute bottom-0 left-1/3 h-44 w-44 rounded-full bg-fuchsia-500/10 blur-3xl"></div>
+
+        <div class="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <p class="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-600 dark:text-cyan-400">
+                    Student Management
+                </p>
+                <h2 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">All Students</h2>
+                <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300">
+                    Yahan se aap sabhi students ka live data, today status aur quick actions premium layout me manage kar sakte ho.
+                </p>
+            </div>
+
+            <div class="flex flex-wrap gap-3">
+                <a href="/admin/add-student-page"
+                   class="rounded-2xl bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl">
+                    Add Student
+                </a>
+                <a href="/admin/dashboard"
+                   class="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                    Back Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <p class="text-sm text-slate-500 dark:text-slate-400">Total Students</p>
+            <h3 class="mt-2 text-4xl font-bold" data-counter th:attr="data-target=${totalStudents}">0</h3>
+        </div>
+
+        <div class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <p class="text-sm text-slate-500 dark:text-slate-400">Present Today</p>
+            <h3 class="mt-2 text-4xl font-bold text-emerald-600 dark:text-emerald-400"
+                data-counter th:attr="data-target=${presentToday}">0</h3>
+        </div>
+
+        <div class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <p class="text-sm text-slate-500 dark:text-slate-400">Attendance Marked</p>
+            <h3 class="mt-2 text-4xl font-bold">
+                <span data-counter data-suffix="%" th:attr="data-target=${attendancePercentage}">0%</span>
+            </h3>
+        </div>
+
+        <div class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <p class="text-sm text-slate-500 dark:text-slate-400">Remaining</p>
+            <h3 class="mt-2 text-4xl font-bold" data-counter th:attr="data-target=${remainingStudents}">0</h3>
+        </div>
+    </div>
+
+    <div class="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+        <div class="rounded-[32px] border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <p class="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-600 dark:text-cyan-400">Search & Filters</p>
+            <h3 class="mt-2 text-2xl font-bold">Manage records quickly</h3>
+
+            <div class="mt-6 space-y-4">
+                <div>
+                    <label for="studentSearch" class="mb-2 block text-sm font-semibold">Search Student</label>
+                    <input id="studentSearch"
+                           type="text"
+                           placeholder="Search by name, email, roll no..."
+                           class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                </div>
+
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <button id="showAllBtn"
+                            class="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 dark:bg-white dark:text-slate-900">
+                        Show All
+                    </button>
+                    <button id="showPresentBtn"
+                            class="rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5">
+                        Show Present
+                    </button>
+                    <button id="showAbsentBtn"
+                            class="rounded-2xl bg-rose-600 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5">
+                        Show Absent
+                    </button>
+                    <button id="showNotMarkedBtn"
+                            class="rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5">
+                        Show Not Marked
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-6 rounded-[26px] border border-slate-200 bg-gradient-to-r from-cyan-50 to-indigo-50 p-5 dark:border-slate-800 dark:bg-slate-800/40">
+                <p class="text-sm font-semibold text-slate-600 dark:text-slate-300">Live Edit</p>
+                <p class="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">
+                    Admin dashboard se direct `editId` aane par yahi page automatic student edit modal open karega.
+                </p>
+            </div>
+        </div>
+
+        <div class="rounded-[32px] border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <p class="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-600 dark:text-cyan-400">Quick View</p>
+            <h3 class="mt-2 text-2xl font-bold">Students Snapshot</h3>
+
+            <div class="mt-8 flex h-64 items-end justify-between gap-4 rounded-[28px] border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-800/40">
+                <div class="flex h-full w-full items-end justify-around gap-3">
+                    <div class="flex flex-1 flex-col items-center justify-end gap-3">
+                        <div class="mini-bar w-full max-w-[60px] rounded-t-2xl bg-gradient-to-t from-cyan-500 to-cyan-300"
+                             data-bar-height="100"></div>
+                        <div class="text-center">
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Total</p>
+                            <p class="text-sm font-bold" data-counter th:attr="data-target=${totalStudents}">0</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-1 flex-col items-center justify-end gap-3">
+                        <div class="mini-bar w-full max-w-[60px] rounded-t-2xl bg-gradient-to-t from-emerald-500 to-emerald-300"
+                             th:attr="data-bar-height=${presentPercent}"></div>
+                        <div class="text-center">
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Present</p>
+                            <p class="text-sm font-bold text-emerald-600 dark:text-emerald-400"
+                               data-counter th:attr="data-target=${presentToday}">0</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-1 flex-col items-center justify-end gap-3">
+                        <div class="mini-bar w-full max-w-[60px] rounded-t-2xl bg-gradient-to-t from-indigo-500 to-fuchsia-400"
+                             th:attr="data-bar-height=${attendancePercentage}"></div>
+                        <div class="text-center">
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Marked</p>
+                            <p class="text-sm font-bold">
+                                <span data-counter data-suffix="%" th:attr="data-target=${attendancePercentage}">0%</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 text-sm text-slate-500 dark:text-slate-400">
+                Total visible rows:
+                <span id="visibleCount" class="font-bold">0</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div class="border-b border-slate-200 p-6 dark:border-slate-800">
+            <p class="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-600 dark:text-cyan-400">Live Table</p>
+            <h3 class="mt-2 text-2xl font-bold">Students Records</h3>
+        </div>
+
+        <div th:if="${#lists.isEmpty(students)}" class="p-10">
+            <div class="rounded-[30px] border border-dashed border-slate-300 bg-slate-50 p-10 text-center dark:border-slate-700 dark:bg-slate-800/40">
+                <h4 class="text-2xl font-bold">No Students Found</h4>
+                <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">
+                    Database me abhi koi student record nahi hai.
+                </p>
+            </div>
+        </div>
+
+        <div th:if="${!#lists.isEmpty(students)}" class="overflow-x-auto">
+            <table class="min-w-full text-left">
+                <thead class="bg-slate-50 dark:bg-slate-800/60">
+                <tr>
+                    <th class="px-6 py-4 text-sm font-semibold">ID</th>
+                    <th class="px-6 py-4 text-sm font-semibold">Name</th>
+                    <th class="px-6 py-4 text-sm font-semibold">Email</th>
+                    <th class="px-6 py-4 text-sm font-semibold">Age</th>
+                    <th class="px-6 py-4 text-sm font-semibold">Roll No</th>
+                    <th class="px-6 py-4 text-sm font-semibold">Status</th>
+                    <th class="px-6 py-4 text-sm font-semibold">Actions</th>
+                </tr>
+                </thead>
+
+                <tbody id="studentsTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                <tr th:each="student : ${students}"
+                    class="student-row transition hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                    th:attr="
+                        data-id=${student.id},
+                        data-name=${student.username},
+                        data-email=${student.email},
+                        data-age=${student.age},
+                        data-roll=${student.rollnumber},
+                        data-status=${todayStatusMap[student.id] != null ? todayStatusMap[student.id] : 'NOT MARKED'}
+                    ">
+                    <td class="px-6 py-4 text-sm student-id" th:text="${student.id}">1</td>
+                    <td class="px-6 py-4 text-sm font-semibold student-name" th:text="${student.username}">Student</td>
+                    <td class="px-6 py-4 text-sm student-email" th:text="${student.email}">student@email.com</td>
+                    <td class="px-6 py-4 text-sm student-age" th:text="${student.age}">20</td>
+                    <td class="px-6 py-4 text-sm student-roll" th:text="${student.rollnumber}">12345</td>
+                    <td class="px-6 py-4">
+                        <span th:if="${todayStatusMap[student.id] == 'PRESENT'}"
+                              class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                            PRESENT
+                        </span>
+
+                        <span th:if="${todayStatusMap[student.id] == 'ABSENT'}"
+                              class="rounded-full bg-rose-100 px-3 py-1 text-xs font-bold text-rose-700 dark:bg-rose-900/30 dark:text-rose-300">
+                            ABSENT
+                        </span>
+
+                        <span th:if="${todayStatusMap[student.id] == null}"
+                              class="rounded-full bg-slate-200 px-3 py-1 text-xs font-bold text-slate-700 dark:bg-slate-700 dark:text-slate-200">
+                            NOT MARKED
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <input type="hidden" class="student-subjects-hidden" th:value="${student.subjects}">
+                        <input type="hidden" class="student-admission-hidden" th:value="${student.admissionDate}">
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button"
+                                    class="preview-btn rounded-xl bg-cyan-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-cyan-700">
+                                Preview
+                            </button>
+                            <button type="button"
+                                    class="edit-btn rounded-xl bg-indigo-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-indigo-700">
+                                Edit
+                            </button>
+                            <button type="button"
+                                    class="copy-email-btn rounded-xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700">
+                                Copy
+                            </button>
+                            <button type="button"
+                                    class="delete-btn rounded-xl bg-rose-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-rose-700">
+                                Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- PREVIEW MODAL -->
+    <div id="studentPreviewModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 px-4">
+        <div class="w-full max-w-2xl rounded-[30px] border border-slate-200 bg-white p-7 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-600 dark:text-cyan-400">Student Preview</p>
+                    <h3 id="modalStudentName" class="mt-2 text-2xl font-bold">Student Name</h3>
+                </div>
+                <button id="closeStudentPreviewModal"
+                        class="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold dark:border-slate-700 dark:bg-slate-800">
+                    Close
+                </button>
+            </div>
+
+            <div class="mt-6 grid gap-4 md:grid-cols-2">
+                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
+                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">ID</p>
+                    <h4 id="modalStudentId" class="mt-2 text-lg font-bold">1</h4>
+                </div>
+                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
+                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Email</p>
+                    <h4 id="modalStudentEmail" class="mt-2 text-lg font-bold">email</h4>
+                </div>
+                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
+                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Age</p>
+                    <h4 id="modalStudentAge" class="mt-2 text-lg font-bold">20</h4>
+                </div>
+                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
+                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Roll No</p>
+                    <h4 id="modalStudentRoll" class="mt-2 text-lg font-bold">12345</h4>
+                </div>
+                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
+                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Today Status</p>
+                    <h4 id="modalStudentStatus" class="mt-2 text-lg font-bold">NOT MARKED</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT MODAL -->
+    <div id="studentEditModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 px-4">
+        <div class="w-full max-w-3xl rounded-[30px] border border-slate-200 bg-white p-7 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-indigo-600 dark:text-indigo-400">Edit Student</p>
+                    <h3 class="mt-2 text-2xl font-bold">Update Record</h3>
+                </div>
+                <button id="closeStudentEditModal"
+                        class="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold dark:border-slate-700 dark:bg-slate-800">
+                    Close
+                </button>
+            </div>
+
+            <div class="mt-6">
+                <form id="editStudentForm" class="space-y-5">
+                    <input type="hidden" id="editStudentId">
+
+                    <div class="grid gap-5 md:grid-cols-2">
+                        <div>
+                            <label for="editUsername" class="mb-2 block text-sm font-semibold">Student Name</label>
+                            <input id="editUsername" type="text" required
+                                   class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                        </div>
+
+                        <div>
+                            <label for="editEmail" class="mb-2 block text-sm font-semibold">Email</label>
+                            <input id="editEmail" type="email" required
+                                   class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                        </div>
+                    </div>
+
+                    <div class="grid gap-5 md:grid-cols-2">
+                        <div>
+                            <label for="editAge" class="mb-2 block text-sm font-semibold">Age</label>
+                            <input id="editAge" type="number" required
+                                   class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                        </div>
+
+                        <div>
+                            <label for="editAdmissionDate" class="mb-2 block text-sm font-semibold">Admission Date</label>
+                            <input id="editAdmissionDate" type="date"
+                                   class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="editSubjects" class="mb-2 block text-sm font-semibold">Subjects</label>
+                        <input id="editSubjects" type="text"
+                               placeholder="Example: Java, Spring Boot, SQL"
+                               class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                    </div>
+
+                    <div class="flex flex-wrap gap-3">
+                        <button type="submit" id="editSubmitBtn"
+                                class="rounded-2xl bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl">
+                            Update Student
+                        </button>
+
+                        <button type="button" id="editResetBtn"
+                                class="rounded-2xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                            Reset
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (() => {
+            const animateCounters = () => {
+                document.querySelectorAll("[data-counter]").forEach((el) => {
+                    const target = parseFloat(el.dataset.target || "0");
+                    const suffix = el.dataset.suffix || "";
+                    const duration = 1200;
+                    const start = performance.now();
+
+                    const step = (now) => {
+                        const progress = Math.min((now - start) / duration, 1);
+                        const value = target * (1 - Math.pow(1 - progress, 3));
+                        el.textContent = (Number.isInteger(target) ? Math.round(value) : value.toFixed(1)) + suffix;
+                        if (progress < 1) requestAnimationFrame(step);
+                    };
+
+                    requestAnimationFrame(step);
+                });
+            };
+
+            const animateBars = () => {
+                document.querySelectorAll("[data-bar-height]").forEach((el) => {
+                    const height = el.dataset.barHeight || "0";
+                    requestAnimationFrame(() => el.style.height = height + "%");
+                });
+            };
+
+            animateCounters();
+            animateBars();
+
+            const searchInput = document.getElementById("studentSearch");
+            const rows = () => Array.from(document.querySelectorAll(".student-row"));
+            const visibleCount = document.getElementById("visibleCount");
+
+            const updateVisibleCount = () => {
+                const count = rows().filter(row => row.style.display !== "none").length;
+                visibleCount.textContent = count;
+            };
+
+            const applyFilter = (mode = "ALL") => {
+                const query = (searchInput.value || "").toLowerCase().trim();
+
+                rows().forEach((row) => {
+                    const text = row.textContent.toLowerCase();
+                    const status = (row.dataset.status || "").toUpperCase();
+
+                    const queryMatch = text.includes(query);
+                    let statusMatch = true;
+
+                    if (mode === "PRESENT") statusMatch = status === "PRESENT";
+                    if (mode === "ABSENT") statusMatch = status === "ABSENT";
+                    if (mode === "NOT MARKED") statusMatch = status === "NOT MARKED";
+
+                    row.style.display = queryMatch && statusMatch ? "" : "none";
+                });
+
+                updateVisibleCount();
+            };
+
+            searchInput.addEventListener("input", () => applyFilter("ALL"));
+            document.getElementById("showAllBtn").addEventListener("click", () => applyFilter("ALL"));
+            document.getElementById("showPresentBtn").addEventListener("click", () => applyFilter("PRESENT"));
+            document.getElementById("showAbsentBtn").addEventListener("click", () => applyFilter("ABSENT"));
+            document.getElementById("showNotMarkedBtn").addEventListener("click", () => applyFilter("NOT MARKED"));
+
+            updateVisibleCount();
+
+            // PREVIEW
+            const previewModal = document.getElementById("studentPreviewModal");
+            const closePreviewModalBtn = document.getElementById("closeStudentPreviewModal");
+
+            document.querySelectorAll(".preview-btn").forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    const row = btn.closest(".student-row");
+                    document.getElementById("modalStudentName").textContent = row.dataset.name || "-";
+                    document.getElementById("modalStudentId").textContent = row.dataset.id || "-";
+                    document.getElementById("modalStudentEmail").textContent = row.dataset.email || "-";
+                    document.getElementById("modalStudentAge").textContent = row.dataset.age || "-";
+                    document.getElementById("modalStudentRoll").textContent = row.dataset.roll || "-";
+                    document.getElementById("modalStudentStatus").textContent = row.dataset.status || "-";
+
+                    previewModal.classList.remove("hidden");
+                    previewModal.classList.add("flex");
+                });
+            });
+
+            closePreviewModalBtn.addEventListener("click", () => {
+                previewModal.classList.add("hidden");
+                previewModal.classList.remove("flex");
+            });
+
+            previewModal.addEventListener("click", (e) => {
+                if (e.target === previewModal) {
+                    previewModal.classList.add("hidden");
+                    previewModal.classList.remove("flex");
+                }
+            });
+
+            // COPY EMAIL
+            document.querySelectorAll(".copy-email-btn").forEach((btn) => {
+                btn.addEventListener("click", async () => {
+                    const row = btn.closest(".student-row");
+                    try {
+                        await navigator.clipboard.writeText(row.dataset.email || "");
+                        window.showToast?.("Email copied successfully.", "success");
+                    } catch (e) {
+                        window.showToast?.("Failed to copy email.", "error");
+                    }
+                });
+            });
+
+            // DELETE
+            document.querySelectorAll(".delete-btn").forEach((btn) => {
+                btn.addEventListener("click", async () => {
+                    const row = btn.closest(".student-row");
+                    const studentId = row.dataset.id;
+                    const studentName = row.dataset.name || "this student";
+
+                    const confirmed = confirm(`Delete ${studentName}?`);
+                    if (!confirmed) return;
+
+                    try {
+                        const response = await fetch(`/admin/delete/${studentId}`, {
+                            method: "DELETE"
+                        });
+
+                        if (!response.ok) {
+                            window.showToast?.("Delete failed.", "error");
+                            return;
+                        }
+
+                        row.remove();
+                        updateVisibleCount();
+                        window.showToast?.("Student deleted successfully.", "success");
+                    } catch (error) {
+                        window.showToast?.("Something went wrong while deleting.", "error");
+                    }
+                });
+            });
+
+            // EDIT MODAL
+            const editModal = document.getElementById("studentEditModal");
+            const closeEditModalBtn = document.getElementById("closeStudentEditModal");
+            const editForm = document.getElementById("editStudentForm");
+            const editStudentId = document.getElementById("editStudentId");
+            const editUsername = document.getElementById("editUsername");
+            const editEmail = document.getElementById("editEmail");
+            const editAge = document.getElementById("editAge");
+            const editSubjects = document.getElementById("editSubjects");
+            const editAdmissionDate = document.getElementById("editAdmissionDate");
+            const editSubmitBtn = document.getElementById("editSubmitBtn");
+            const editResetBtn = document.getElementById("editResetBtn");
+
+            let currentEditRow = null;
+
+            const readSubjectsFromRow = (row) => {
+                const raw = row.querySelector(".student-subjects-hidden")?.value || "";
+                return raw.replace(/^\[/, "").replace(/\]$/, "");
+            };
+
+            const readAdmissionDateFromRow = (row) => {
+                return row.querySelector(".student-admission-hidden")?.value || "";
+            };
+
+            const openEditModal = (row) => {
+                if (!row) return;
+
+                currentEditRow = row;
+                editStudentId.value = row.dataset.id || "";
+                editUsername.value = row.dataset.name || "";
+                editEmail.value = row.dataset.email || "";
+                editAge.value = row.dataset.age || "";
+                editSubjects.value = readSubjectsFromRow(row);
+                editAdmissionDate.value = readAdmissionDateFromRow(row);
+
+                editModal.classList.remove("hidden");
+                editModal.classList.add("flex");
+            };
+
+            document.querySelectorAll(".edit-btn").forEach((btn) => {
+                btn.addEventListener("click", () => openEditModal(btn.closest(".student-row")));
+            });
+
+            closeEditModalBtn.addEventListener("click", () => {
+                editModal.classList.add("hidden");
+                editModal.classList.remove("flex");
+            });
+
+            editModal.addEventListener("click", (e) => {
+                if (e.target === editModal) {
+                    editModal.classList.add("hidden");
+                    editModal.classList.remove("flex");
+                }
+            });
+
+            editResetBtn.addEventListener("click", () => {
+                if (!currentEditRow) return;
+                editUsername.value = currentEditRow.dataset.name || "";
+                editEmail.value = currentEditRow.dataset.email || "";
+                editAge.value = currentEditRow.dataset.age || "";
+                editSubjects.value = readSubjectsFromRow(currentEditRow);
+                editAdmissionDate.value = readAdmissionDateFromRow(currentEditRow);
+            });
+
+            editForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                const subjectsArray = editSubjects.value
+                    .split(",")
+                    .map(subject => subject.trim())
+                    .filter(subject => subject.length > 0);
+
+                const payload = {
+                    username: editUsername.value.trim(),
+                    email: editEmail.value.trim(),
+                    age: parseInt(editAge.value),
+                    subjects: subjectsArray,
+                    admissionDate: editAdmissionDate.value ? editAdmissionDate.value : null
+                };
+
+                editSubmitBtn.disabled = true;
+                editSubmitBtn.textContent = "Updating...";
+
+                try {
+                    const response = await fetch(`/admin/update/${editStudentId.value}`, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        window.showToast?.("Update failed.", "error");
+                        editSubmitBtn.disabled = false;
+                        editSubmitBtn.textContent = "Update Student";
+                        return;
+                    }
+
+                    window.showToast?.("Student updated successfully.", "success");
+                    setTimeout(() => window.location.reload(), 700);
+
+                } catch (error) {
+                    window.showToast?.("Something went wrong while updating.", "error");
+                    editSubmitBtn.disabled = false;
+                    editSubmitBtn.textContent = "Update Student";
+                }
+            });
+
+            // AUTO OPEN EDIT FROM DASHBOARD SHORTCUT
+            const params = new URLSearchParams(window.location.search);
+            const editId = params.get("editId");
+
+            if (editId) {
+                const targetRow = rows().find(row => row.dataset.id === editId);
+                if (targetRow) {
+                    openEditModal(targetRow);
+                    window.showToast?.(`Student ${editId} editor opened.`, "info");
+                } else {
+                    window.showToast?.(`Student ID ${editId} not found.`, "warning");
+                }
+            }
+        })();
+    </script>
+
+</section>
+</body>
+</html>

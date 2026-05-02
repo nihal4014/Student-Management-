@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{base :: parent(~{::section},~{::title})}">
+<head>
+    <title>Home | Student Management System</title>
+</head>
+<body>
+<section class="space-y-24">
+
+    <div class="grid items-center gap-12 pt-6 lg:grid-cols-2 lg:gap-16">
+        <div>
+            <div class="inline-flex items-center gap-2 rounded-full border border-cyan-200 bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-700 shadow-sm dark:border-cyan-900/40 dark:bg-cyan-900/20 dark:text-cyan-300">
+                <span class="h-2.5 w-2.5 rounded-full bg-cyan-500 animate-pulse"></span>
+                Next Generation Academic Portal
+            </div>
+
+            <h2 class="mt-6 text-4xl font-bold tracking-tight sm:text-5xl xl:text-6xl">
+                Premium
+                <span class="bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 bg-clip-text text-transparent">
+                    Student Management
+                </span>
+                experience for admin and students.
+            </h2>
+
+            <p class="mt-6 max-w-2xl text-base leading-8 text-slate-600 dark:text-slate-300">
+                Ek modern, secure aur visually premium platform jahan admin complete student records manage kar sakta hai,
+                daily attendance track kar sakta hai, aur students apna dashboard, profile, attendance history aur subjects ekdum clean interface me dekh sakte hain.
+            </p>
+
+            <div class="mt-8 flex flex-wrap gap-4">
+                <a th:if="${loggedInDisplayName == null}"
+                   href="/login"
+                   class="rounded-2xl bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 px-6 py-3 text-sm font-semibold text-white shadow-xl transition duration-300 hover:-translate-y-1 hover:shadow-2xl">
+                    Start Now
+                </a>
+
+                <a th:if="${loggedInDisplayName != null}"
+                   href="/home"
+                   class="rounded-2xl bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 px-6 py-3 text-sm font-semibold text-white shadow-xl transition duration-300 hover:-translate-y-1 hover:shadow-2xl">
+                    Open Dashboard
+                </a>
+
+                <a href="#roles"
+                   class="rounded-2xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                    Explore Roles
+                </a>
+            </div>
+
+            <div class="mt-10 grid gap-4 sm:grid-cols-3">
+                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900">
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Security</p>
+                    <h3 class="mt-2 text-xl font-bold">Role Based</h3>
+                </div>
+
+                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900">
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Authentication</p>
+                    <h3 class="mt-2 text-xl font-bold">Google Ready</h3>
+                </div>
+
+                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900">
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Tracking</p>
+                    <h3 class="mt-2 text-xl font-bold">Attendance</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="relative">
+            <div class="absolute -inset-6 rounded-[40px] bg-gradient-to-r from-cyan-500/20 via-indigo-500/20 to-fuchsia-500/20 blur-3xl"></div>
+
+            <div class="relative glass-card overflow-hidden rounded-[34px] border border-slate-200 p-6 shadow-2xl dark:border-slate-800">
+                <div class="mb-6 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Live Preview</p>
+                        <h3 class="text-2xl font-bold">Dashboard Experience</h3>
+                    </div>
+                    <div class="rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-md">
+                        Premium
+                    </div>
+                </div>
+
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div class="rounded-2xl bg-slate-50 p-5 transition duration-300 hover:scale-[1.02] dark:bg-slate-800/70">
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Admin Panel</p>
+                        <h4 class="mt-2 text-3xl font-bold">Control</h4>
+                    </div>
+
+                    <div class="rounded-2xl bg-slate-50 p-5 transition duration-300 hover:scale-[1.02] dark:bg-slate-800/70">
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Student Panel</p>
+                        <h4 class="mt-2 text-3xl font-bold">Access</h4>
+                    </div>
+
+                    <div class="rounded-2xl bg-slate-50 p-5 transition duration-300 hover:scale-[1.02] dark:bg-slate-800/70">
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Attendance</p>
+                        <h4 class="mt-2 text-3xl font-bold">Track</h4>
+                    </div>
+
+                    <div class="rounded-2xl bg-slate-50 p-5 transition duration-300 hover:scale-[1.02] dark:bg-slate-800/70">
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Reports</p>
+                        <h4 class="mt-2 text-3xl font-bold">Analyze</h4>
+                    </div>
+                </div>
+
+                <div class="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-800/50">
+                    <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Why this system?</p>
+                    <p class="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">
+                        Clean premium UI, secure login, dynamic dashboards aur scalable academic workflow — sab ek hi system me.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="roles">
+        <div class="mb-10 text-center">
+            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">Role Based Modules</p>
+            <h3 class="mt-2 text-3xl font-bold tracking-tight">Separate premium flows for Admin and Student</h3>
+            <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">
+                Har role ke liye focused aur beautifully designed experience.
+            </p>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-2">
+            <div class="group relative overflow-hidden rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+                <div class="absolute right-0 top-0 h-40 w-40 rounded-full bg-cyan-500/10 blur-3xl"></div>
+
+                <div class="relative">
+                    <div class="mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-2xl font-bold text-white shadow-lg">
+                        A
+                    </div>
+
+                    <h4 class="text-2xl font-bold">Admin Experience</h4>
+                    <p class="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
+                        Powerful control panel for managing students, monitoring attendance, generating reports and handling the academic workflow efficiently.
+                    </p>
+
+                    <div class="mt-6 space-y-3">
+                        <div class="rounded-2xl bg-slate-50 px-4 py-3 text-sm font-medium dark:bg-slate-800/70">Add / Update / Delete Students</div>
+                        <div class="rounded-2xl bg-slate-50 px-4 py-3 text-sm font-medium dark:bg-slate-800/70">Attendance Report & Analytics</div>
+                        <div class="rounded-2xl bg-slate-50 px-4 py-3 text-sm font-medium dark:bg-slate-800/70">Teacher and Subject Management</div>
+                    </div>
+
+                    <div class="mt-6">
+                        <a href="/login"
+                           class="inline-flex rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition duration-300 hover:-translate-y-0.5 dark:bg-white dark:text-slate-900">
+                            Continue as Admin
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="group relative overflow-hidden rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+                <div class="absolute right-0 top-0 h-40 w-40 rounded-full bg-fuchsia-500/10 blur-3xl"></div>
+
+                <div class="relative">
+                    <div class="mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-r from-fuchsia-500 to-indigo-600 text-2xl font-bold text-white shadow-lg">
+                        S
+                    </div>
+
+                    <h4 class="text-2xl font-bold">Student Experience</h4>
+                    <p class="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
+                        Personal dashboard with premium profile, attendance history, login tracking and subject details designed for clarity and ease.
+                    </p>
+
+                    <div class="mt-6 space-y-3">
+                        <div class="rounded-2xl bg-slate-50 px-4 py-3 text-sm font-medium dark:bg-slate-800/70">Personal Dashboard</div>
+                        <div class="rounded-2xl bg-slate-50 px-4 py-3 text-sm font-medium dark:bg-slate-800/70">Attendance History & Status</div>
+                        <div class="rounded-2xl bg-slate-50 px-4 py-3 text-sm font-medium dark:bg-slate-800/70">Profile and Subject Overview</div>
+                    </div>
+
+                    <div class="mt-6">
+                        <a href="/login"
+                           class="inline-flex rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition duration-300 hover:-translate-y-0.5 dark:bg-white dark:text-slate-900">
+                            Continue as Student
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="features">
+        <div class="mb-10 text-center">
+            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">Features</p>
+            <h3 class="mt-2 text-3xl font-bold tracking-tight">Everything in one premium ecosystem</h3>
+        </div>
+
+        <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            <div class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900">
+                <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300">
+                    ✓
+                </div>
+                <h4 class="text-xl font-bold">Student CRUD</h4>
+                <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                    Admin complete student management easily perform kar sakta hai.
+                </p>
+            </div>
+
+            <div class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900">
+                <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
+                    ✓
+                </div>
+                <h4 class="text-xl font-bold">Attendance Tracking</h4>
+                <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                    Present, absent aur login count ke saath smart daily attendance system.
+                </p>
+            </div>
+
+            <div class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900">
+                <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/30 dark:text-fuchsia-300">
+                    ✓
+                </div>
+                <h4 class="text-xl font-bold">Google Login</h4>
+                <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                    Premium sign-in with Google with profile image and display name support.
+                </p>
+            </div>
+
+            <div class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900">
+                <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                    ✓
+                </div>
+                <h4 class="text-xl font-bold">Premium UI</h4>
+                <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                    Responsive, modern, dark-light ready and elegant interface across the system.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="rounded-[36px] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div class="mb-8 text-center">
+            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">Highlights</p>
+            <h3 class="mt-2 text-3xl font-bold tracking-tight">Designed for a premium academic workflow</h3>
+        </div>
+
+        <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+            <div class="rounded-2xl bg-slate-50 p-6 text-center transition duration-300 hover:-translate-y-1 hover:shadow-lg dark:bg-slate-800/70">
+                <h4 class="text-4xl font-bold text-cyan-600 dark:text-cyan-400">100%</h4>
+                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Role Based Access</p>
+            </div>
+
+            <div class="rounded-2xl bg-slate-50 p-6 text-center transition duration-300 hover:-translate-y-1 hover:shadow-lg dark:bg-slate-800/70">
+                <h4 class="text-4xl font-bold text-indigo-600 dark:text-indigo-400">24/7</h4>
+                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Secure Availability</p>
+            </div>
+
+            <div class="rounded-2xl bg-slate-50 p-6 text-center transition duration-300 hover:-translate-y-1 hover:shadow-lg dark:bg-slate-800/70">
+                <h4 class="text-4xl font-bold text-fuchsia-600 dark:text-fuchsia-400">1 Click</h4>
+                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Google Sign In</p>
+            </div>
+
+            <div class="rounded-2xl bg-slate-50 p-6 text-center transition duration-300 hover:-translate-y-1 hover:shadow-lg dark:bg-slate-800/70">
+                <h4 class="text-4xl font-bold text-emerald-600 dark:text-emerald-400">Daily</h4>
+                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Attendance Monitoring</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="workflow">
+        <div class="mb-10 text-center">
+            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">Workflow</p>
+            <h3 class="mt-2 text-3xl font-bold tracking-tight">Simple flow, premium execution</h3>
+        </div>
+
+        <div class="grid gap-6 md:grid-cols-3">
+            <div class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900">
+                <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-100 text-lg font-bold text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300">1</div>
+                <h4 class="text-xl font-bold">Login</h4>
+                <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                    User normal credentials ya Google account se secure login karta hai.
+                </p>
+            </div>
+
+            <div class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900">
+                <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-100 text-lg font-bold text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">2</div>
+                <h4 class="text-xl font-bold">Open Role Dashboard</h4>
+                <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                    System automatically role ke hisaab se sahi dashboard par redirect karta hai.
+                </p>
+            </div>
+
+            <div class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900">
+                <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-fuchsia-100 text-lg font-bold text-fuchsia-700 dark:bg-fuchsia-900/30 dark:text-fuchsia-300">3</div>
+                <h4 class="text-xl font-bold">Manage and Track</h4>
+                <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                    Admin data manage karta hai aur student apni profile aur attendance monitor karta hai.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="overflow-hidden rounded-[38px] border border-slate-200 bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 p-10 text-white shadow-2xl dark:border-slate-800">
+        <div class="grid items-center gap-8 lg:grid-cols-2">
+            <div>
+                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">Premium Experience</p>
+                <h3 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+                    Ready to transform your academic workflow?
+                </h3>
+                <p class="mt-4 max-w-2xl text-sm leading-7 text-white/90">
+                    Secure login, smart dashboards, daily attendance, premium layout aur modern UI ke saath ye system academic management ko next level par le jata hai.
+                </p>
+            </div>
+
+            <div class="flex flex-wrap gap-4 lg:justify-end">
+                <a th:if="${loggedInDisplayName == null}"
+                   href="/login"
+                   class="rounded-2xl bg-white px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg transition duration-300 hover:-translate-y-1 hover:shadow-2xl">
+                    Login Now
+                </a>
+
+                <a th:if="${loggedInDisplayName != null}"
+                   href="/home"
+                   class="rounded-2xl bg-white px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg transition duration-300 hover:-translate-y-1 hover:shadow-2xl">
+                    Open Dashboard
+                </a>
+
+                <a href="#features"
+                   class="rounded-2xl border border-white/30 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur transition duration-300 hover:-translate-y-1 hover:bg-white/20">
+                    View Features
+                </a>
+            </div>
+        </div>
+    </div>
+
+</section>
+</body>
+</html>
