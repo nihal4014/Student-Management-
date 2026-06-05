@@ -1,0 +1,16 @@
+server:
+  port: 8080
+  error:
+    include-message: always
+
+spring:
+  datasource:
+    # कुबेरनेटीज़ के सीक्रेट और कॉन्फिगमैप से ये वैल्यूज अपने आप यहाँ आ जाएँगी
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate # प्रोडक्शन में हमेशा 'validate' इस्तेमाल होता है
+    show-sql: false

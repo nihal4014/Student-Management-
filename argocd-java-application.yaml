@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: java-student-mgmt-gitops
+  namespace: argocd
+spec:
+  project: default
+  source:
+    # 🔗 आपकी गिटहब रिपॉजिटरी का यूआरएल जहाँ यह पूरा कोड पुश होगा
+    repoURL: https://github.com/nihal4014/Student-Management-System.git
+    targetRevision: main
+    # 📁 फोल्डर का सही रास्ता (Path) जहाँ आपका हेल्म चार्ट रखा है
+    path: helm/java-student-chart
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true

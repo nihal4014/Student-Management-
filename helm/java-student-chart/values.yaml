@@ -1,0 +1,24 @@
+replicaCount: 1
+
+image:
+  repository: nihal2000/java-student-app
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: true
+  className: nginx
+  host: api.studentmgmt.local # कंपनी का लोकल डोमेन
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 300m
+    memory: 256Mi
