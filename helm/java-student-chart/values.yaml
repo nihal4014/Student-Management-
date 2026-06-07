@@ -5,14 +5,16 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 
-# 🚀 यहाँ हमने DB_HOST को सीधे होस्ट मशीन (EC2) का रास्ता दिखा दिया है
+# 🚀 बिना प्रॉपर्टीज फ़ाइल के, ये वेरिएबल्स सीधे स्प्रिंग बूट को लाइव कर देंगे
 env:
   SPRING_PROFILES_ACTIVE: "prod"
-  DB_HOST: "172.17.0.1"             # <--- यह IP पॉड को सीधे तुम्हारे EC2 वाले डॉकर पोस्टग्रेस से जोड़ देगी
-  DB_PORT: "5433"                    # तुम्हारी application.properties के मुताबिक पोर्ट 5433
-  DB_NAME: "Task1"
-  DB_USER: "postgres"
-  DB_PASSWORD: "admin"
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://172.17.0.1:5433/Task1"
+  SPRING_DATASOURCE_USERNAME: "postgres"
+  SPRING_DATASOURCE_PASSWORD: "admin"
+  SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+  SPRING_JPA_SHOW_SQL: "true"
+  SPRING_MAIN_ALLOW_CIRCULAR_REFERENCES: "true"
+  SPRING_KAFKA_LISTENER_AUTO_STARTUP: "false" # काफ्का बंद है, इसलिए इसे फॉल्स रखना ज़रूरी है भाई
 
 service:
   type: ClusterIP
