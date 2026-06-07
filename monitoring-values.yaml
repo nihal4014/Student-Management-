@@ -1,0 +1,38 @@
+# भारी कंपोनेंट्स को बंद करके रैम बचाना
+alertmanager:
+  enabled: false # ❌ बंद (रैम बचेगी)
+
+prometheusOperator:
+  enabled: true # यह ज़रूरी है
+
+prometheus:
+  enabled: true
+  prometheusSpec:
+    retention: 1d # सिर्फ 1 दिन का डेटा (ताकि लोड न बढ़े)
+    resources:
+      requests:
+        cpu: "50m"
+        memory: "100Mi"
+      limits:
+        cpu: "100m"
+        memory: "200Mi"
+
+# 1. Grafana को सबसे लाइटवेट मोड में रखना
+grafana:
+  enabled: true
+  adminPassword: "adminMonitoring2026"
+  
+  # साइडकार्स को बंद करो (यह सबसे ज़्यादा इमेज पुल एरर और रैम खा रहे थे)
+  sidecar:
+    dashboards:
+      enabled: false
+    datasources:
+      enabled: false
+
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "100Mi"
+    limits:
+      cpu: "100m"
+      memory: "200Mi"

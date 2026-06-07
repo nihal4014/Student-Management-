@@ -20,6 +20,16 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
         - containerPort: {{ .Values.service.targetPort }}
+        
+        # 🚀 यह जादुई ब्लॉक values.yaml से सारे एनवायरनमेंट वेरिएबल्स ऑटोमैटिकली यहाँ डाल देगा
+        {{- if .Values.env }}
+        env:
+          {{- range $key, $value := .Values.env }}
+          - name: {{ $key }}
+            value: {{ $value | quote }}
+          {{- end }}
+        {{- end }}
+
         resources:
           limits:
             cpu: {{ .Values.resources.limits.cpu }}
