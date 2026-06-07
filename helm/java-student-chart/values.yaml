@@ -5,9 +5,14 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 
-# 🚀 यहाँ हमने स्प्रिंग बूट की एक्टिव प्रोफाइल जोड़ दी है
+# 🚀 यहाँ हमने DB_HOST को सीधे होस्ट मशीन (EC2) का रास्ता दिखा दिया है
 env:
   SPRING_PROFILES_ACTIVE: "prod"
+  DB_HOST: "172.17.0.1"             # <--- यह IP पॉड को सीधे तुम्हारे EC2 वाले डॉकर पोस्टग्रेस से जोड़ देगी
+  DB_PORT: "5433"                    # तुम्हारी application.properties के मुताबिक पोर्ट 5433
+  DB_NAME: "Task1"
+  DB_USER: "postgres"
+  DB_PASSWORD: "admin"
 
 service:
   type: ClusterIP
@@ -17,12 +22,4 @@ service:
 ingress:
   enabled: true
   className: nginx
-  host: api.studentmgmt.local # कंपनी का लोकल डोमेन
-
-resources:
-  requests:
-    cpu: 100m
-    memory: 128Mi
-  limits:
-    cpu: 300m
-    memory: 256Mi
+  host: api.studentmgmt.local
