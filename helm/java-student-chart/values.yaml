@@ -8,9 +8,11 @@ image:
 # 🚀 बिना प्रॉपर्टीज फ़ाइल के, ये वेरिएबल्स सीधे स्प्रिंग बूट को लाइव कर देंगे
 env:
   SPRING_PROFILES_ACTIVE: "prod"
-  SPRING_DATASOURCE_URL: "jdbc:postgresql://172.17.0.1:5433/Task1"
+  # 👇 यहाँ अपन ने लोकल क्लस्टर सर्विस का नाम 'postgres-service' और पोर्ट 5432 सेट कर दिया है भाई
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-service:5432/Task1"
   SPRING_DATASOURCE_USERNAME: "postgres"
-  SPRING_DATASOURCE_PASSWORD: "admin"
+  # 👇 जो पासवर्ड अपन ने postgres.yaml में 'root' रखा है, वही यहाँ डाल रहे हैं
+  SPRING_DATASOURCE_PASSWORD: "root"
   SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
   SPRING_JPA_SHOW_SQL: "true"
   SPRING_MAIN_ALLOW_CIRCULAR_REFERENCES: "true"

@@ -1,39 +1,58 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-deployment
+  name: java-student-app
   labels:
-    app: {{ .Release.Name }}
+    app: java-student-app
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: 1
   selector:
     matchLabels:
-      app: {{ .Release.Name }}
+      app: java-student-app
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}
+        app: java-student-app
     spec:
       containers:
       - name: java-app-container
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        image: "nihal2000/java-student-app:latest"
+        imagePullPolicy: IfNotPresent
         ports:
-        - containerPort: {{ .Values.service.targetPort }}
-        
-        # 🚀 यह जादुई ब्लॉक values.yaml से सारे एनवायरनमेंट वेरिएबल्स ऑटोमैटिकली यहाँ डाल देगा
-        {{- if .Values.env }}
+        - containerPort: 8080
         env:
-          {{- range $key, $value := .Values.env }}
-          - name: {{ $key }}
-            value: {{ $value | quote }}
-          {{- end }}
-        {{- end }}
-
-        resources:
-          limits:
-            cpu: {{ .Values.resources.limits.cpu }}
-            memory: {{ .Values.resources.limits.memory }}
-          requests:
-            cpu: {{ .Values.resources.requests.cpu }}
-            memory: {{ .Values.resources.requests.memory }}
+        - name: SPRING_PROFILES_ACTIVE
+          value: "prod"
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:postgresql://postgres-service:5432/Task1"
+        - name: SPRING_DATASOURCE_USERNAME
+          value: "postgres"
+        - name: SPRING_DATASOURCE_PASSWORD
+          value: "root"
+        - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+          value: "update"
+        - name: SPRING_JPA_SHOW_SQL
+          value: "true"
+        - name: SPRING_MAIN_ALLOW_CIRCULAR_REFERENCES
+          value: "true"
+        - name: SPRING_KAFKA_LISTENER_AUTO_STARTUP
+          value: "false"
+        - name: APP_KAFKA_STUDENT_LOGIN_TOPIC
+          value: "student-login-topic"
+        - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+          value: "localhost:9092"
+        - name: SPRING_MAIL_HOST
+          value: "localhost"
+        - name: SPRING_MAIL_PORT
+          value: "25"
+        - name: SPRING_MAIL_USERNAME
+          value: "dummy@gmail.com"
+        - name: SPRING_MAIL_PASSWORD
+          value: "dummypassword"
+        - name: SPRING_KAFKA_CONSUMER_GROUP_ID
+          value: "student-app-group"
+        # 👇 ये दोनों लाइनें स्प्रिंग सिक्योरिटी के OAuth2 एरर को शांत कर देंगी
+        - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID
+          value: "dummy-client-id"
+        - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET
+          value: "dummy-client-secret"
